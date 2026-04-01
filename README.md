@@ -38,6 +38,9 @@ ecosystem
 
 - Python 3.12+
 - [uv](https://docs.astral.sh/uv/) for dependency management
+- Docker and Docker Compose
+- PostgreSQL
+- Redis
 
 ---
 
@@ -46,6 +49,8 @@ ecosystem
 ```bash
 uv sync
 cp .env.example .env
+cp .env.test.example .env.test
+docker compose up -d db redis
 uv run python manage.py migrate
 make dev
 ```
@@ -74,17 +79,61 @@ API docs at `http://localhost:8000/api/docs`.
 
 ---
 
+## Health and Observability
+
+| Endpoint            | Description                                          |
+| ------------------- | ---------------------------------------------------- |
+| `GET /health/live`  | Liveness probe                                       |
+| `GET /health/ready` | Readiness probe (checks PostgreSQL + Redis)          |
+| `GET /health`       | Full health summary with dependency and runtime info |
+| `GET /metrics`      | Prometheus metrics endpoint                          |
+
+Structured JSON logs are emitted via `structlog`, with request ID propagation
+through the shared middleware stack.
+
+---
+
+## Environment Variables
+
+| Variable         | Description                  | Default                  |
+| ---------------- | ---------------------------- | ------------------------ |
+| `DEBUG`          | Django debug mode            | `true`                   |
+| `PORT`           | Application port             | `8000`                   |
+| `DATABASE_URL`   | PostgreSQL connection string | Required                 |
+| `REDIS_HOST`     | Redis host                   | `localhost`              |
+| `REDIS_PORT`     | Redis port                   | `6379`                   |
+| `API_PREFIX`     | API route prefix             | `api`                    |
+| `CORS_ORIGINS`   | Allowed frontend origins     | `http://localhost:3000`  |
+| `LOG_LEVEL`      | Logging verbosity            | `INFO`                   |
+| `METRICS_ENABLED`| Enable Prometheus metrics    | `true`                   |
+
+See `.env.example` and `.env.test.example` for the full set.
+
+---
+
 ## Project Structure
 
-| Path                   | Purpose                               |
-| ---------------------- | ------------------------------------- |
-| `app/config/`          | Django settings, URLs, ASGI/WSGI      |
-| `app/modules/tasks/`   | Tasks domain (model, schema, service, router) |
-| `app/shared/`          | Cross-cutting infra (DB, Redis, middleware, health, metrics, logging, exceptions) |
-| `app/main.py`          | Django Ninja API instance              |
-| `manage.py`            | Django management CLI                  |
-| `tests/`               | pytest test suite                      |
-| `docker/`              | Dockerfiles (prod + dev)               |
+| Path                 | Purpose                                                       |
+| -------------------- | ------------------------------------------------------------- |
+| `app/config/`        | Django settings, URLs, ASGI/WSGI bootstrap                    |
+| `app/modules/tasks/` | Sample tasks domain with model, schema, service, and router   |
+| `app/shared/`        | Shared DB, Redis, health, metrics, middleware, and logging    |
+| `app/main.py`        | Django Ninja API instance                                     |
+| `manage.py`          | Django management CLI                                         |
+| `tests/`             | pytest suite                                                  |
+| `docker/`            | Development and production container files                    |
+
+---
+
+## Shared Governance
+
+| Area           | Tooling                                        |
+| -------------- | ---------------------------------------------- |
+| Dependency updates | Renovate                                   |
+| Issue intake   | GitHub issue templates                         |
+| Change review  | Pull request template                          |
+| CI             | GitHub Actions for lint, format, types, tests |
+| Security       | Trivy, dependency review, `pip-audit`          |
 
 ---
 
