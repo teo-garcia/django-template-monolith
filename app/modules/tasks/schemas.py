@@ -1,8 +1,8 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import Field
 from ninja import Schema
+from pydantic import Field
 
 from app.modules.tasks.models import TaskStatus
 
