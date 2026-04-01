@@ -5,8 +5,8 @@ from django.test import Client
 
 from app.config.env import get_settings
 
-API_PREFIX = get_settings().api_prefix.rstrip('/')
-TASKS_BASE_URL = f'{API_PREFIX}/tasks'
+API_PREFIX = get_settings().api_prefix.rstrip("/")
+TASKS_BASE_URL = f"{API_PREFIX}/tasks"
 
 
 @pytest.fixture
@@ -19,9 +19,7 @@ class TestTasksCRUD:
     def test_create_task(self, client: Client) -> None:
         response = client.post(
             f"{TASKS_BASE_URL}/",
-            data=json.dumps(
-                {"title": "Test task", "description": "A test task", "priority": 3}
-            ),
+            data=json.dumps({"title": "Test task", "description": "A test task", "priority": 3}),
             content_type="application/json",
         )
         assert response.status_code == 201
@@ -52,9 +50,7 @@ class TestTasksCRUD:
         )
         client.post(
             f"{TASKS_BASE_URL}/",
-            data=json.dumps(
-                {"title": "High in progress", "priority": 5, "status": "IN_PROGRESS"}
-            ),
+            data=json.dumps({"title": "High in progress", "priority": 5, "status": "IN_PROGRESS"}),
             content_type="application/json",
         )
 
@@ -115,9 +111,7 @@ class TestTasksNotFound:
         assert response.status_code == 404
 
     def test_delete_nonexistent_task(self, client: Client) -> None:
-        response = client.delete(
-            f"{TASKS_BASE_URL}/00000000-0000-0000-0000-000000000000"
-        )
+        response = client.delete(f"{TASKS_BASE_URL}/00000000-0000-0000-0000-000000000000")
         assert response.status_code == 404
 
 

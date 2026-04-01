@@ -12,9 +12,7 @@ urlpatterns = [
     path("", service_info),
     path(
         "docs",
-        RedirectView.as_view(
-            url=f"{settings.api_prefix.rstrip('/')}/docs", permanent=False
-        ),
+        RedirectView.as_view(url=f"{settings.api_prefix.rstrip('/')}/docs", permanent=False),
     ),
     path("health/", health),
     path("health/live", liveness),

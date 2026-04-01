@@ -6,9 +6,7 @@ from app.modules.tasks.schemas import CreateTaskSchema, UpdateTaskSchema
 
 class TasksService:
     @staticmethod
-    def find_all(
-        status: TaskStatus | None = None, priority: int | None = None
-    ) -> list[Task]:
+    def find_all(status: TaskStatus | None = None, priority: int | None = None) -> list[Task]:
         query = Task.objects.all()
 
         if status is not None:
