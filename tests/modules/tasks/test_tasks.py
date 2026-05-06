@@ -9,6 +9,19 @@ API_PREFIX = get_settings().api_prefix.rstrip("/")
 TASKS_BASE_URL = f"{API_PREFIX}/tasks"
 
 
+def assert_error_envelope(data: dict[str, object], status_code: int, method: str) -> None:
+    assert data["success"] is False
+    assert data["statusCode"] == status_code
+    assert data["method"] == method
+    assert isinstance(data["timestamp"], str)
+    assert isinstance(data["path"], str)
+    assert isinstance(data["message"], str)
+    assert isinstance(data["error"], str)
+    meta = data["meta"]
+    assert isinstance(meta, dict)
+    assert isinstance(meta["requestId"], str)
+
+
 @pytest.fixture
 def client() -> Client:
     return Client()
@@ -109,6 +122,7 @@ class TestTasksNotFound:
     def test_get_nonexistent_task(self, client: Client) -> None:
         response = client.get(f"{TASKS_BASE_URL}/00000000-0000-0000-0000-000000000000")
         assert response.status_code == 404
+        assert_error_envelope(response.json(), 404, "GET")
 
     def test_delete_nonexistent_task(self, client: Client) -> None:
         response = client.delete(f"{TASKS_BASE_URL}/00000000-0000-0000-0000-000000000000")
@@ -124,6 +138,7 @@ class TestTasksValidation:
             content_type="application/json",
         )
         assert response.status_code == 422
+        assert_error_envelope(response.json(), 422, "POST")
 
     def test_create_task_invalid_priority_rejected(self, client: Client) -> None:
         response = client.post(
