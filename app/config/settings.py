@@ -2,12 +2,41 @@
 
 import os
 from pathlib import Path
+from typing import Any
+from urllib.parse import parse_qsl, unquote, urlparse
 
 from app.config.env import get_settings
 
 _settings = get_settings()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _database_from_url(database_url: str) -> dict[str, Any]:
+    parsed = urlparse(database_url)
+
+    if parsed.scheme not in {"postgres", "postgresql"}:
+        raise ValueError("DATABASE_URL must use a postgres:// or postgresql:// scheme")
+    if not parsed.hostname:
+        raise ValueError("DATABASE_URL must include a host")
+    if not parsed.path or parsed.path == "/":
+        raise ValueError("DATABASE_URL must include a database name")
+
+    config: dict[str, Any] = {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": unquote(parsed.path.lstrip("/")),
+        "USER": unquote(parsed.username or ""),
+        "PASSWORD": unquote(parsed.password or ""),
+        "HOST": parsed.hostname,
+        "PORT": str(parsed.port or ""),
+        "CONN_MAX_AGE": 600,
+    }
+
+    if parsed.query:
+        config["OPTIONS"] = dict(parse_qsl(parsed.query, keep_blank_values=True))
+
+    return config
+
 
 SECRET_KEY = _settings.secret_key
 DEBUG = _settings.debug
@@ -27,6 +56,8 @@ MIDDLEWARE = [
 
 if _settings.cors_enabled:
     MIDDLEWARE.insert(0, "app.shared.middleware.cors.CorsMiddleware")
+if _settings.metrics_enabled:
+    MIDDLEWARE.append("app.shared.metrics.middleware.MetricsMiddleware")
 
 TEMPLATES = [
     {
@@ -41,17 +72,7 @@ ROOT_URLCONF = "app.config.urls"
 ASGI_APPLICATION = "app.config.asgi.application"
 WSGI_APPLICATION = "app.config.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": _settings.database_url.rsplit("/", 1)[-1],
-        "USER": _settings.database_url.split("://")[1].split(":")[0],
-        "PASSWORD": _settings.database_url.split(":")[2].split("@")[0],
-        "HOST": _settings.database_url.split("@")[1].split(":")[0],
-        "PORT": _settings.database_url.split(":")[-1].split("/")[0],
-        "CONN_MAX_AGE": 600,
-    },
-}
+DATABASES = {"default": _database_from_url(_settings.database_url)}
 
 CACHES = {
     "default": {

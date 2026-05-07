@@ -17,6 +17,8 @@ urlpatterns = [
     path("health/", health),
     path("health/live", liveness),
     path("health/ready", readiness),
-    path("metrics", metrics_view),
     path(settings.api_prefix.strip("/") + "/", api.urls),
 ]
+
+if settings.metrics_enabled:
+    urlpatterns.append(path("metrics", metrics_view))
