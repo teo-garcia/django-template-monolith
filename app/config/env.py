@@ -17,7 +17,7 @@ class AppSettings(BaseSettings):
     debug: bool = False
     port: int = 8000
     api_prefix: str = "/api"
-    secret_key: str = "change-me-in-production"  # noqa: S105
+    secret_key: str = "local-template-secret-key-with-enough-entropy-for-checks"  # noqa: S105
     allowed_hosts: str = "localhost,127.0.0.1,0.0.0.0"
     shutdown_timeout: int = 10
 
@@ -45,6 +45,12 @@ class AppSettings(BaseSettings):
 
     # Metrics
     metrics_enabled: bool = True
+
+    # Deployment security
+    secure_ssl_redirect: bool = False
+    secure_hsts_seconds: int = 0
+    session_cookie_secure: bool = False
+    csrf_cookie_secure: bool = False
 
     @property
     def redis_url(self) -> str:

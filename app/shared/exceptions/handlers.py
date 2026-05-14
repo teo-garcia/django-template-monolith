@@ -3,6 +3,7 @@ from typing import Any
 
 import structlog
 from django.http import HttpRequest, HttpResponse
+from django_ratelimit.exceptions import Ratelimited
 from ninja import NinjaAPI
 from ninja.errors import HttpError, ValidationError
 
@@ -52,6 +53,14 @@ def register_exception_handlers(api: NinjaAPI) -> None:
             request,
             _api_error_body(request, 422, "Validation failed", "ValidationError", exc.errors),
             status=422,
+        )
+
+    @api.exception_handler(Ratelimited)
+    def ratelimited_error_handler(request: HttpRequest, exc: Ratelimited) -> HttpResponse:
+        return api.create_response(
+            request,
+            _api_error_body(request, 429, "Rate limit exceeded.", type(exc).__name__),
+            status=429,
         )
 
     @api.exception_handler(Exception)

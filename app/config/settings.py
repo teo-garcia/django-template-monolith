@@ -49,9 +49,12 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
     "app.shared.middleware.request_id.RequestIdMiddleware",
     "app.shared.middleware.security_headers.SecurityHeadersMiddleware",
     "app.shared.middleware.logging_mw.LoggingMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 if _settings.cors_enabled:
@@ -93,6 +96,18 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+SECURE_SSL_REDIRECT = _settings.secure_ssl_redirect
+SECURE_HSTS_SECONDS = _settings.secure_hsts_seconds
+SECURE_HSTS_INCLUDE_SUBDOMAINS = _settings.secure_hsts_seconds > 0
+SECURE_HSTS_PRELOAD = _settings.secure_hsts_seconds > 0
+SESSION_COOKIE_SECURE = _settings.session_cookie_secure
+CSRF_COOKIE_SECURE = _settings.csrf_cookie_secure
+X_FRAME_OPTIONS = "DENY"
+
+RATELIMIT_USE_CACHE = "default"
+RATELIMIT_FAIL_OPEN = True
+RATELIMIT_RATE = _settings.throttle_limit
 
 # Structlog logging
 LOGGING = {

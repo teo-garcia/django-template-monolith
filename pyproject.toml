@@ -18,6 +18,7 @@ dependencies = [
     "prometheus-client>=0.21",
     "django-ratelimit>=4.1",
     "httpx>=0.28",
+    "uvicorn-worker>=0.3",
 ]
 
 [dependency-groups]
@@ -67,7 +68,7 @@ exclude = ["migrations/"]
 django_settings_module = "app.config.settings"
 
 [[tool.mypy.overrides]]
-module = ["redis.*", "prometheus_client.*"]
+module = ["django_ratelimit.*", "redis.*", "prometheus_client.*"]
 ignore_missing_imports = true
 
 # -- pytest --

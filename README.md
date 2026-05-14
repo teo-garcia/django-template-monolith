@@ -55,7 +55,8 @@ uv run python manage.py migrate
 make dev
 ```
 
-API docs at `http://localhost:8000/api/docs`.
+API docs are reachable at `http://localhost:8000/docs`, which redirects to the
+Django Ninja docs under the API prefix.
 
 ---
 
@@ -69,6 +70,7 @@ API docs at `http://localhost:8000/api/docs`.
 | `make test`        | Run tests                                |
 | `make test-cov`    | Run tests with coverage                  |
 | `make check`       | Run lint, format, typecheck, and tests   |
+| `make django-check-deploy` | Run Django deployment checks with production security defaults |
 | `make lint`        | Lint and fix with Ruff                   |
 | `make lint-types`  | Type check with mypy                     |
 | `make format`      | Format with Ruff                         |
@@ -106,6 +108,10 @@ through the shared middleware stack.
 | `CORS_ORIGINS`   | Allowed frontend origins     | `http://localhost:3000`  |
 | `LOG_LEVEL`      | Logging verbosity            | `INFO`                   |
 | `METRICS_ENABLED`| Enable Prometheus metrics    | `true`                   |
+| `SECURE_SSL_REDIRECT` | Redirect HTTP to HTTPS in deployment | `false` |
+| `SECURE_HSTS_SECONDS` | HSTS max age in deployment | `0` |
+| `SESSION_COOKIE_SECURE` | Require HTTPS for session cookies | `false` |
+| `CSRF_COOKIE_SECURE` | Require HTTPS for CSRF cookies | `false` |
 
 See `.env.example` and `.env.test.example` for the full set.
 

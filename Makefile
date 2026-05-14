@@ -6,7 +6,7 @@ dev:
 	uv run uvicorn app.config.asgi:application --reload --host 0.0.0.0 --port 8000
 
 start:
-	uv run gunicorn app.config.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+	uv run gunicorn app.config.asgi:application -k uvicorn_worker.UvicornWorker --bind 0.0.0.0:8000
 
 build:
 	docker build -f docker/Dockerfile -t django-template-monolith .
@@ -35,6 +35,11 @@ django-check:
 	uv run python manage.py check
 
 django-check-deploy:
+	SECRET_KEY="$${SECRET_KEY:-deployment-check-secret-key-with-enough-entropy-for-django}" \
+	SECURE_SSL_REDIRECT="$${SECURE_SSL_REDIRECT:-true}" \
+	SECURE_HSTS_SECONDS="$${SECURE_HSTS_SECONDS:-31536000}" \
+	SESSION_COOKIE_SECURE="$${SESSION_COOKIE_SECURE:-true}" \
+	CSRF_COOKIE_SECURE="$${CSRF_COOKIE_SECURE:-true}" \
 	uv run python manage.py check --deploy
 
 test:

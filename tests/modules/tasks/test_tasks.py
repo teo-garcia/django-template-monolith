@@ -1,7 +1,8 @@
 import json
 
 import pytest
-from django.test import Client
+from django.core.cache import cache
+from django.test import Client, override_settings
 
 from app.config.env import get_settings
 
@@ -155,3 +156,16 @@ class TestTasksValidation:
             content_type="application/json",
         )
         assert response.status_code == 422
+
+
+@pytest.mark.django_db(transaction=True)
+@override_settings(RATELIMIT_RATE="1/m")
+def test_tasks_api_is_rate_limited(client: Client) -> None:
+    cache.clear()
+
+    first_response = client.get(f"{TASKS_BASE_URL}/")
+    second_response = client.get(f"{TASKS_BASE_URL}/")
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 429
+    assert_error_envelope(second_response.json(), 429, "GET")
