@@ -15,3 +15,19 @@ def test_openapi_docs_available() -> None:
     client = Client()
     response = client.get("/docs", follow=True)
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_openapi_schema_lists_operational_and_api_routes() -> None:
+    client = Client()
+    response = client.get("/openapi.json")
+
+    assert response.status_code == 200
+    paths = response.json()["paths"]
+    assert "/" in paths
+    assert "/health/live" in paths
+    assert "/health/ready" in paths
+    assert "/health" in paths
+    assert "/metrics" in paths
+    assert "/api/tasks/" in paths
+    assert "/api/tasks/{task_id}" in paths

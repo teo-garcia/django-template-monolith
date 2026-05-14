@@ -55,8 +55,7 @@ uv run python manage.py migrate
 make dev
 ```
 
-API docs are reachable at `http://localhost:8000/docs`, which redirects to the
-Django Ninja docs under the API prefix.
+API docs are reachable at `http://localhost:8000/docs`.
 
 ---
 
