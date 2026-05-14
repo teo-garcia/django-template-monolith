@@ -29,3 +29,14 @@ class TaskResponse(Schema):
     priority: int
     created_at: datetime
     updated_at: datetime
+
+
+class PaginationMeta(Schema):
+    total: int = Field(..., ge=0)
+    page: int = Field(..., ge=1)
+    pageSize: int = Field(..., ge=1, le=100)  # noqa: N815
+
+
+class TaskListResponse(Schema):
+    data: list[TaskResponse]
+    meta: PaginationMeta

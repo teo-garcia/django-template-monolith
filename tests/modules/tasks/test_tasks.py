@@ -53,8 +53,29 @@ class TestTasksCRUD:
         response = client.get(f"{TASKS_BASE_URL}/")
         assert response.status_code == 200
         data = response.json()
-        assert isinstance(data, list)
-        assert len(data) >= 1
+        assert isinstance(data["data"], list)
+        assert len(data["data"]) >= 1
+        assert data["meta"]["total"] >= 1
+        assert data["meta"]["page"] == 1
+        assert data["meta"]["pageSize"] == 20
+
+    def test_list_tasks_paginates_results(self, client: Client) -> None:
+        client.post(
+            f"{TASKS_BASE_URL}/",
+            data=json.dumps({"title": "First", "priority": 1}),
+            content_type="application/json",
+        )
+        client.post(
+            f"{TASKS_BASE_URL}/",
+            data=json.dumps({"title": "Second", "priority": 2}),
+            content_type="application/json",
+        )
+
+        response = client.get(f"{TASKS_BASE_URL}/?page=1&pageSize=1")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["data"]) == 1
+        assert data["meta"] == {"total": 2, "page": 1, "pageSize": 1}
 
     def test_list_tasks_supports_status_and_priority_filters(self, client: Client) -> None:
         client.post(
@@ -72,9 +93,9 @@ class TestTasksCRUD:
 
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 1
-        assert data[0]["status"] == "IN_PROGRESS"
-        assert data[0]["priority"] >= 5
+        assert len(data["data"]) == 1
+        assert data["data"][0]["status"] == "IN_PROGRESS"
+        assert data["data"][0]["priority"] >= 5
 
     def test_get_task(self, client: Client) -> None:
         create_resp = client.post(

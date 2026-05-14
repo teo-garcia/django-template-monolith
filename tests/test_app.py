@@ -31,3 +31,10 @@ def test_openapi_schema_lists_operational_and_api_routes() -> None:
     assert "/metrics" in paths
     assert "/api/tasks/" in paths
     assert "/api/tasks/{task_id}" in paths
+    schemas = response.json()["components"]["schemas"]
+    assert "ErrorEnvelope" in schemas
+    assert "TaskListResponse" in schemas
+    assert (
+        paths["/api/tasks/"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["$ref"]
+        == "#/components/schemas/TaskListResponse"
+    )
