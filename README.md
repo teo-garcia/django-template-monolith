@@ -76,6 +76,7 @@ API docs are reachable at `http://localhost:8000/docs`.
 | `make db-migrate`  | Generate new migration                   |
 | `make db-deploy`   | Apply all migrations                     |
 | `make db-reset`    | Flush and re-migrate                     |
+| `make db-seed`     | Seed deterministic sample data           |
 | `make docker-dev`  | Start full stack via Docker Compose      |
 
 ---
@@ -103,7 +104,7 @@ through the shared middleware stack.
 | `DATABASE_URL`   | PostgreSQL connection string | Required                 |
 | `REDIS_HOST`     | Redis host                   | `localhost`              |
 | `REDIS_PORT`     | Redis port                   | `6379`                   |
-| `API_PREFIX`     | API route prefix             | `api`                    |
+| `API_PREFIX`     | Versioned API route prefix   | `/api/v1`                |
 | `CORS_ORIGINS`   | Allowed frontend origins     | `http://localhost:3000`  |
 | `LOG_LEVEL`      | Logging verbosity            | `INFO`                   |
 | `METRICS_ENABLED`| Enable Prometheus metrics    | `true`                   |

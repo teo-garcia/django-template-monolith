@@ -16,7 +16,7 @@ class AppSettings(BaseSettings):
     app_version: str = "1"
     debug: bool = False
     port: int = 8000
-    api_prefix: str = "/api"
+    api_prefix: str = "/api/v1"
     secret_key: str = "local-template-secret-key-with-enough-entropy-for-checks"  # noqa: S105
     allowed_hosts: str = "localhost,127.0.0.1,0.0.0.0"
     shutdown_timeout: int = 10

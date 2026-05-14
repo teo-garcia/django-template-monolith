@@ -4,9 +4,7 @@ import pytest
 from django.core.cache import cache
 from django.test import Client, override_settings
 
-from app.config.env import get_settings
-
-API_PREFIX = get_settings().api_prefix.rstrip("/")
+API_PREFIX = "/api/v1"
 TASKS_BASE_URL = f"{API_PREFIX}/tasks"
 
 
