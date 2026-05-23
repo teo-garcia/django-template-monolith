@@ -139,6 +139,24 @@ through the shared middleware stack.
 
 See `.env.example` and `.env.test.example` for the full set.
 
+### Environment Promotion
+
+Use `.env.example` as the complete variable inventory, then review values before
+promoting beyond local development:
+
+- Keep `DEBUG=false`, `LOG_LEVEL=info`, and `LOG_JSON=true`.
+- Replace `SECRET_KEY`, local Postgres, Redis, and pgAdmin defaults; pgAdmin is
+  local-only.
+- Set `ALLOWED_HOSTS` and `CORS_ORIGIN` to deployed hosts/origins. Do not use
+  wildcards.
+- Enable HTTPS-owned settings when TLS is active:
+  `SECURE_SSL_REDIRECT=true`, `SECURE_HSTS_SECONDS=31536000`,
+  `SESSION_COOKIE_SECURE=true`, and `CSRF_COOKIE_SECURE=true`.
+- Run `make django-check-deploy` before promoting a production configuration.
+- Production schema changes go through `make db-deploy`.
+- Use `docker-compose.prod.yml` for a production-like local smoke test:
+  `docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build`.
+
 ---
 
 ## Project Structure

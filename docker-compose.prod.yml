@@ -1,0 +1,42 @@
+services:
+  db:
+    ports: !reset []
+    volumes: !override
+      - postgres_data:/var/lib/postgresql
+
+  redis:
+    ports: !reset []
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      APP_NAME: ${APP_NAME:-Django Monolith Template}
+      APP_VERSION: ${APP_VERSION:-1}
+      DEBUG: "false"
+      API_PREFIX: ${API_PREFIX:-/api/v1}
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY for production-like runs}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:?Set ALLOWED_HOSTS for production-like runs}
+      SHUTDOWN_TIMEOUT: ${SHUTDOWN_TIMEOUT:-10}
+      DATABASE_URL: postgresql://${DATABASE_USER:-postgres}:${DATABASE_PASSWORD:-postgres}@db:5432/${DATABASE_NAME:-django_monolith}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_TTL: ${REDIS_TTL:-3600}
+      PORT: ${PORT:-8000}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_JSON: "true"
+      CORS_ENABLED: ${CORS_ENABLED:-true}
+      CORS_ORIGIN: ${CORS_ORIGIN:?Set CORS_ORIGIN to the deployed frontend origin}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT:-100/m}
+      METRICS_ENABLED: ${METRICS_ENABLED:-true}
+      SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-true}
+      SECURE_HSTS_SECONDS: ${SECURE_HSTS_SECONDS:-31536000}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
+      CSRF_COOKIE_SECURE: ${CSRF_COOKIE_SECURE:-true}
+    volumes: !reset []
+
+  pgadmin:
+    profiles:
+      - local-tools
