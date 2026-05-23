@@ -125,6 +125,7 @@ through the shared middleware stack.
 | ---------------- | ---------------------------- | ------------------------ |
 | `DEBUG`          | Django debug mode            | `true`                   |
 | `PORT`           | Application port             | `8000`                   |
+| `HTTP_PORT`      | Nginx host port in production compose | `8080` |
 | `DATABASE_URL`   | PostgreSQL connection string | Required                 |
 | `REDIS_HOST`     | Redis host                   | `localhost`              |
 | `REDIS_PORT`     | Redis port                   | `6379`                   |
@@ -156,6 +157,8 @@ promoting beyond local development:
 - Production schema changes go through `make db-deploy`.
 - Use `docker-compose.prod.yml` for a production-like local smoke test:
   `docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build`.
+  Nginx is the public entry point on `HTTP_PORT`; the app, Postgres, and Redis
+  ports are internal to the Compose network.
 
 ---
 
