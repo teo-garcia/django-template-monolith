@@ -46,6 +46,11 @@ class AppSettings(BaseSettings):
     # Metrics
     metrics_enabled: bool = True
 
+    # Tracing
+    otel_enabled: bool = True
+    otel_service_name: str = "django-template-monolith"
+    otel_exporter_otlp_traces_endpoint: str = "http://localhost:4318/v1/traces"
+
     # Deployment security
     secure_ssl_redirect: bool = False
     secure_hsts_seconds: int = 0

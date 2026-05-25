@@ -1,0 +1,16 @@
+services:
+  app:
+    environment:
+      ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0,django-template-monolith
+      OTEL_ENABLED: "true"
+      OTEL_SERVICE_NAME: django-template-monolith
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
+    networks:
+      observability:
+        aliases:
+          - django-template-monolith
+
+networks:
+  observability:
+    name: templates-observability
+    external: true
