@@ -21,7 +21,7 @@ def test_readiness() -> None:
 @pytest.mark.django_db
 def test_health() -> None:
     client = Client()
-    response = client.get("/health/")
+    response = client.get("/health")
     assert response.status_code == 200
     data = response.json()
     assert data["status"] in ("ok", "degraded")

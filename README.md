@@ -55,7 +55,7 @@ uv run python manage.py migrate
 make dev
 ```
 
-API docs at `http://localhost:8000/api/docs`.
+API docs are reachable at `http://localhost:8000/docs`.
 
 ---
 
@@ -69,13 +69,39 @@ API docs at `http://localhost:8000/api/docs`.
 | `make test`        | Run tests                                |
 | `make test-cov`    | Run tests with coverage                  |
 | `make check`       | Run lint, format, typecheck, and tests   |
+| `make django-check-deploy` | Run Django deployment checks with production security defaults |
 | `make lint`        | Lint and fix with Ruff                   |
 | `make lint-types`  | Type check with mypy                     |
 | `make format`      | Format with Ruff                         |
 | `make db-migrate`  | Generate new migration                   |
 | `make db-deploy`   | Apply all migrations                     |
 | `make db-reset`    | Flush and re-migrate                     |
+| `make db-seed`     | Seed deterministic sample data           |
 | `make docker-dev`  | Start full stack via Docker Compose      |
+
+---
+
+## Migration Safety
+
+Run Django migrations as a pre-deploy step with `make db-deploy` before the new
+application version starts. Do not run migrations from application startup,
+request handlers, seed scripts, or tests that point at a shared database.
+
+Production migrations must be backward-compatible with the currently running
+version. Use expand-contract changes: add nullable columns, new tables, and new
+indexes before code depends on them; backfill explicitly when needed; deploy code
+that stops reading the old shape; then remove or narrow schema in a later
+release.
+
+`make db-deploy` is safe to re-run when there are no pending migrations.
+Production rollback is a database backup restore plus compatible code, or a
+forward-fix migration. Django's targeted migrate commands may be useful locally,
+but this template does not treat down migrations as the primary production
+rollback strategy. `make db-reset` is local/test-only.
+
+Avoid destructive one-step migrations, renaming columns without a compatibility
+window, adding non-null columns without defaults/backfills, and combining schema
+contraction with the first code release that stops using the old shape.
 
 ---
 
@@ -99,15 +125,40 @@ through the shared middleware stack.
 | ---------------- | ---------------------------- | ------------------------ |
 | `DEBUG`          | Django debug mode            | `true`                   |
 | `PORT`           | Application port             | `8000`                   |
+| `HTTP_PORT`      | Nginx host port in production compose | `8080` |
 | `DATABASE_URL`   | PostgreSQL connection string | Required                 |
 | `REDIS_HOST`     | Redis host                   | `localhost`              |
 | `REDIS_PORT`     | Redis port                   | `6379`                   |
-| `API_PREFIX`     | API route prefix             | `api`                    |
+| `API_PREFIX`     | Versioned API route prefix   | `/api/v1`                |
 | `CORS_ORIGINS`   | Allowed frontend origins     | `http://localhost:3000`  |
 | `LOG_LEVEL`      | Logging verbosity            | `INFO`                   |
 | `METRICS_ENABLED`| Enable Prometheus metrics    | `true`                   |
+| `SECURE_SSL_REDIRECT` | Redirect HTTP to HTTPS in deployment | `false` |
+| `SECURE_HSTS_SECONDS` | HSTS max age in deployment | `0` |
+| `SESSION_COOKIE_SECURE` | Require HTTPS for session cookies | `false` |
+| `CSRF_COOKIE_SECURE` | Require HTTPS for CSRF cookies | `false` |
 
 See `.env.example` and `.env.test.example` for the full set.
+
+### Environment Promotion
+
+Use `.env.example` as the complete variable inventory, then review values before
+promoting beyond local development:
+
+- Keep `DEBUG=false`, `LOG_LEVEL=info`, and `LOG_JSON=true`.
+- Replace `SECRET_KEY`, local Postgres, Redis, and pgAdmin defaults; pgAdmin is
+  local-only.
+- Set `ALLOWED_HOSTS` and `CORS_ORIGIN` to deployed hosts/origins. Do not use
+  wildcards.
+- Enable HTTPS-owned settings when TLS is active:
+  `SECURE_SSL_REDIRECT=true`, `SECURE_HSTS_SECONDS=31536000`,
+  `SESSION_COOKIE_SECURE=true`, and `CSRF_COOKIE_SECURE=true`.
+- Run `make django-check-deploy` before promoting a production configuration.
+- Production schema changes go through `make db-deploy`.
+- Use `docker-compose.prod.yml` for a production-like local smoke test:
+  `docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build`.
+  Nginx is the public entry point on `HTTP_PORT`; the app, Postgres, and Redis
+  ports are internal to the Compose network.
 
 ---
 

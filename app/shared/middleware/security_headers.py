@@ -12,7 +12,7 @@ SECURITY_HEADERS = {
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
 }
 
-_DOCS_PATHS = frozenset({"/api/docs", "/api/docs/openapi.json"})
+_DOCS_PATHS = frozenset({"/docs", "/openapi.json", "/api/docs", "/api/docs/openapi.json"})
 
 
 class SecurityHeadersMiddleware:

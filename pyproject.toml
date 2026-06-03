@@ -6,7 +6,7 @@ requires-python = ">=3.12"
 license = "MIT"
 authors = [{ name = "teo-garcia" }]
 dependencies = [
-    "django>=5.2",
+    "django>=6,<6.1",
     "django-ninja>=1.4",
     "uvicorn[standard]>=0.34",
     "gunicorn>=23.0",
@@ -18,6 +18,14 @@ dependencies = [
     "prometheus-client>=0.21",
     "django-ratelimit>=4.1",
     "httpx>=0.28",
+    "uvicorn-worker>=0.3",
+    "opentelemetry-api>=1.42.1",
+    "opentelemetry-sdk>=1.42.1",
+    "opentelemetry-exporter-otlp-proto-http>=1.42.1",
+    "opentelemetry-instrumentation-django>=0.63b1",
+    "opentelemetry-instrumentation-psycopg>=0.63b1",
+    "opentelemetry-instrumentation-redis>=0.63b1",
+    "opentelemetry-instrumentation-asgi>=0.63b1",
 ]
 
 [dependency-groups]
@@ -30,6 +38,9 @@ dev = [
     "django-stubs>=5.1",
     "ruff>=0.8",
     "pre-commit>=4.0",
+    "teo-ruff-config-shared==0.1.0",
+    "teo-mypy-config-shared==0.1.0",
+    "teo-pytest-config-shared==0.1.0",
 ]
 
 [build-system]
@@ -42,35 +53,15 @@ packages = ["app"]
 # -- Ruff (lint + format) --
 
 [tool.ruff]
-target-version = "py312"
-line-length = 120
+extend = "ruff.extend.toml"
 
 [tool.ruff.lint]
-select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "N",   # pep8-naming
-    "UP",  # pyupgrade
-    "B",   # flake8-bugbear
-    "S",   # flake8-bandit (security)
-    "A",   # flake8-builtins
-    "C4",  # flake8-comprehensions
-    "DTZ", # flake8-datetimez
-    "T20", # flake8-print
-    "SIM", # flake8-simplify
-    "DJ",  # flake8-django
-    "RUF", # ruff-specific
-]
+extend-select = ["DJ"]
 ignore = []
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]
 "app/modules/*/migrations/**" = ["UP", "I", "E501", "RUF012"]
-
-[tool.ruff.format]
-quote-style = "double"
 
 # -- mypy --
 
@@ -84,7 +75,7 @@ exclude = ["migrations/"]
 django_settings_module = "app.config.settings"
 
 [[tool.mypy.overrides]]
-module = ["redis.*", "prometheus_client.*"]
+module = ["django_ratelimit.*", "redis.*", "prometheus_client.*"]
 ignore_missing_imports = true
 
 # -- pytest --
@@ -93,6 +84,7 @@ ignore_missing_imports = true
 DJANGO_SETTINGS_MODULE = "app.config.settings"
 asyncio_mode = "auto"
 testpaths = ["tests"]
+addopts = "--strict-markers"
 markers = ["e2e: end-to-end tests requiring database and redis"]
 
 [tool.coverage.run]

@@ -20,8 +20,9 @@ venv/
 .env.*.bak
 
 # IDE
-.vscode/
+.vscode/*
 !.vscode/settings.json
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo
@@ -41,6 +42,7 @@ htmlcov/
 
 # ruff
 .ruff_cache/
+ruff.extend.toml
 
 # Logs
 logs/

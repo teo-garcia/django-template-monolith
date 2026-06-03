@@ -3,10 +3,17 @@ from ninja.errors import HttpError
 from app.modules.tasks.models import Task, TaskStatus
 from app.modules.tasks.schemas import CreateTaskSchema, UpdateTaskSchema
 
+type TaskListResult = tuple[list[Task], int]
+
 
 class TasksService:
     @staticmethod
-    def find_all(status: TaskStatus | None = None, priority: int | None = None) -> list[Task]:
+    def find_all(
+        status: TaskStatus | None = None,
+        priority: int | None = None,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> TaskListResult:
         query = Task.objects.all()
 
         if status is not None:
@@ -15,7 +22,9 @@ class TasksService:
         if priority is not None:
             query = query.filter(priority__gte=priority)
 
-        return list(query)
+        total = query.count()
+        offset = (page - 1) * page_size
+        return list(query[offset : offset + page_size]), total
 
     @staticmethod
     def find_one(task_id: str) -> Task:
