@@ -194,9 +194,9 @@ promoting beyond local development:
 | ------------------------------ | ----------------------- |
 | `fastapi-template-monolith`    | FastAPI backend          |
 | `nest-template-monolith`       | NestJS backend           |
-| `react-template-next`          | Next.js frontend         |
-| `react-template-rr`            | React Router frontend    |
-| `react-template-tanstack-start`| TanStack Start frontend  |
+| `next-template-fullstack`           | Next.js full-stack app       |
+| `react-router-template-fullstack`   | React Router full-stack app  |
+| `tanstack-start-template-fullstack` | TanStack Start full-stack app |
 
 ---
 
