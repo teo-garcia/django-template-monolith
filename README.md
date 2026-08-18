@@ -196,7 +196,7 @@ promoting beyond local development:
 | `nest-template-monolith`       | NestJS backend           |
 | `next-template-fullstack`           | Next.js full-stack app       |
 | `react-router-template-fullstack`   | React Router full-stack app  |
-| `tanstack-start-template-fullstack` | TanStack Start full-stack app |
+| `tanstack-template-fullstack` | TanStack Start full-stack app |
 
 ---
 
