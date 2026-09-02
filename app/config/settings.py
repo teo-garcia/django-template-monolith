@@ -53,6 +53,7 @@ MIDDLEWARE = [
     "app.shared.middleware.request_id.RequestIdMiddleware",
     "app.shared.middleware.security_headers.SecurityHeadersMiddleware",
     "app.shared.middleware.logging_mw.LoggingMiddleware",
+    "app.shared.middleware.response_envelope.ResponseEnvelopeMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]

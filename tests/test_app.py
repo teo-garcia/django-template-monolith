@@ -7,7 +7,9 @@ def test_service_info_available() -> None:
     client = Client()
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json()["status"] == "ok"
+    body = response.json()
+    assert body["success"] is True
+    assert body["data"]["status"] == "ok"
 
 
 @pytest.mark.django_db
@@ -33,8 +35,17 @@ def test_openapi_schema_lists_operational_and_api_routes() -> None:
     assert "/api/v1/tasks/{task_id}" in paths
     schemas = response.json()["components"]["schemas"]
     assert "ErrorEnvelope" in schemas
+    assert "SuccessEnvelope" in schemas
     assert "TaskListResponse" in schemas
-    assert (
-        paths["/api/v1/tasks/"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["$ref"]
-        == "#/components/schemas/TaskListResponse"
-    )
+
+    # Successful payloads travel inside the envelope, so the documented schema
+    # must describe the wrapper with the payload under `data`.
+    list_schema = paths["/api/v1/tasks/"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
+    assert list_schema["allOf"][0]["$ref"] == "#/components/schemas/SuccessEnvelope"
+    assert list_schema["allOf"][1]["properties"]["data"]["$ref"] == "#/components/schemas/TaskListResponse"
+
+    # Health is parsed by orchestrators and must stay unwrapped.
+    health_response = paths["/health"]["get"]["responses"]["200"]
+    health_content = health_response.get("content", {}).get("application/json")
+    if health_content and "schema" in health_content:
+        assert "allOf" not in health_content["schema"]

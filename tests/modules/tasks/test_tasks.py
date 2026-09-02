@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 import pytest
 from django.core.cache import cache
@@ -21,6 +22,24 @@ def assert_error_envelope(data: dict[str, object], status_code: int, method: str
     assert isinstance(meta["requestId"], str)
 
 
+def assert_success_envelope(data: dict[str, object], status_code: int, method: str) -> None:
+    assert data["success"] is True
+    assert data["statusCode"] == status_code
+    assert data["method"] == method
+    assert isinstance(data["timestamp"], str)
+    assert isinstance(data["path"], str)
+    meta = data["meta"]
+    assert isinstance(meta, dict)
+    assert isinstance(meta["requestId"], str)
+    assert isinstance(meta["version"], str)
+    assert isinstance(meta["duration"], int)
+
+
+def payload(response: Any) -> Any:
+    """Unwrap the success envelope: handlers return their payload under `data`."""
+    return response.json()["data"]
+
+
 @pytest.fixture
 def client() -> Client:
     return Client()
@@ -35,7 +54,8 @@ class TestTasksCRUD:
             content_type="application/json",
         )
         assert response.status_code == 201
-        data = response.json()
+        assert_success_envelope(response.json(), 201, "POST")
+        data = payload(response)
         assert data["title"] == "Test task"
         assert data["description"] == "A test task"
         assert data["status"] == "PENDING"
@@ -50,7 +70,8 @@ class TestTasksCRUD:
         )
         response = client.get(f"{TASKS_BASE_URL}/")
         assert response.status_code == 200
-        data = response.json()
+        assert_success_envelope(response.json(), 200, "GET")
+        data = payload(response)
         assert isinstance(data["data"], list)
         assert len(data["data"]) >= 1
         assert data["meta"]["total"] >= 1
@@ -71,7 +92,7 @@ class TestTasksCRUD:
 
         response = client.get(f"{TASKS_BASE_URL}/?page=1&pageSize=1")
         assert response.status_code == 200
-        data = response.json()
+        data = payload(response)
         assert len(data["data"]) == 1
         assert data["meta"] == {"total": 2, "page": 1, "pageSize": 1}
 
@@ -90,7 +111,7 @@ class TestTasksCRUD:
         response = client.get(f"{TASKS_BASE_URL}/?status=IN_PROGRESS&priority=5")
 
         assert response.status_code == 200
-        data = response.json()
+        data = payload(response)
         assert len(data["data"]) == 1
         assert data["data"][0]["status"] == "IN_PROGRESS"
         assert data["data"][0]["priority"] >= 5
@@ -101,10 +122,10 @@ class TestTasksCRUD:
             data=json.dumps({"title": "Task to get"}),
             content_type="application/json",
         )
-        task_id = create_resp.json()["id"]
+        task_id = payload(create_resp)["id"]
         response = client.get(f"{TASKS_BASE_URL}/{task_id}")
         assert response.status_code == 200
-        assert response.json()["title"] == "Task to get"
+        assert payload(response)["title"] == "Task to get"
 
     def test_update_task(self, client: Client) -> None:
         create_resp = client.post(
@@ -112,14 +133,14 @@ class TestTasksCRUD:
             data=json.dumps({"title": "Task to update"}),
             content_type="application/json",
         )
-        task_id = create_resp.json()["id"]
+        task_id = payload(create_resp)["id"]
         response = client.patch(
             f"{TASKS_BASE_URL}/{task_id}",
             data=json.dumps({"title": "Updated title", "status": "IN_PROGRESS"}),
             content_type="application/json",
         )
         assert response.status_code == 200
-        data = response.json()
+        data = payload(response)
         assert data["title"] == "Updated title"
         assert data["status"] == "IN_PROGRESS"
 
@@ -129,7 +150,7 @@ class TestTasksCRUD:
             data=json.dumps({"title": "Task to delete"}),
             content_type="application/json",
         )
-        task_id = create_resp.json()["id"]
+        task_id = payload(create_resp)["id"]
         response = client.delete(f"{TASKS_BASE_URL}/{task_id}")
         assert response.status_code == 204
 
