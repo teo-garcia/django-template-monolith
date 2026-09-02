@@ -46,7 +46,7 @@ test:
 	uv run pytest
 
 test-cov:
-	uv run pytest --cov
+	uv run pytest --cov --cov-report=term-missing --cov-report=lcov --cov-report=html
 
 check: lint-check format-check lint-types django-check test
 
