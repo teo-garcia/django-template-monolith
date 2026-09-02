@@ -176,18 +176,6 @@ promoting beyond local development:
 
 ---
 
-## Shared Governance
-
-| Area           | Tooling                                        |
-| -------------- | ---------------------------------------------- |
-| Dependency updates | Renovate                                   |
-| Issue intake   | GitHub issue templates                         |
-| Change review  | Pull request template                          |
-| CI             | GitHub Actions for lint, format, types, tests |
-| Security       | Trivy, dependency review, `pip-audit`          |
-
----
-
 ## Related Templates
 
 | Template                       | Description             |
