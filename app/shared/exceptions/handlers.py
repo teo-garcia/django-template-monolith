@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 import structlog
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django_ratelimit.exceptions import Ratelimited
 from ninja import NinjaAPI
 from ninja.errors import HttpError, ValidationError
@@ -36,6 +36,14 @@ def _api_error_body(
     if errors is not None:
         body["errors"] = errors
     return body
+
+
+def not_found_error_handler(request: HttpRequest, exception: Exception) -> JsonResponse:
+    del exception
+    return JsonResponse(
+        _api_error_body(request, 404, "Not Found", "NotFound"),
+        status=404,
+    )
 
 
 def register_exception_handlers(api: NinjaAPI) -> None:

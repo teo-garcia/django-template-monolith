@@ -13,7 +13,7 @@ from app.shared.ratelimit import api_ratelimit
 router = Router(tags=["tasks"])
 
 
-@router.get("/", response={HTTPStatus.OK: TaskListResponse, HTTPStatus.UNPROCESSABLE_ENTITY: ErrorEnvelope})
+@router.get("", response={HTTPStatus.OK: TaskListResponse, HTTPStatus.UNPROCESSABLE_ENTITY: ErrorEnvelope})
 @api_ratelimit
 def list_tasks(
     request: HttpRequest,
@@ -37,7 +37,7 @@ def get_task(request: HttpRequest, task_id: str) -> TaskResponse:
 
 
 @router.post(
-    "/",
+    "",
     response={HTTPStatus.CREATED: TaskResponse, HTTPStatus.UNPROCESSABLE_ENTITY: ErrorEnvelope},
 )
 @api_ratelimit

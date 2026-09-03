@@ -54,6 +54,7 @@ MIDDLEWARE = [
     "app.shared.middleware.security_headers.SecurityHeadersMiddleware",
     "app.shared.middleware.logging_mw.LoggingMiddleware",
     "app.shared.middleware.response_envelope.ResponseEnvelopeMiddleware",
+    "app.shared.middleware.ratelimit.RateLimitHeadersMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]

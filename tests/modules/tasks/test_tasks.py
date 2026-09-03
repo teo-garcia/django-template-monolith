@@ -49,7 +49,7 @@ def client() -> Client:
 class TestTasksCRUD:
     def test_create_task(self, client: Client) -> None:
         response = client.post(
-            f"{TASKS_BASE_URL}/",
+            TASKS_BASE_URL,
             data=json.dumps({"title": "Test task", "description": "A test task", "priority": 3}),
             content_type="application/json",
         )
@@ -64,11 +64,11 @@ class TestTasksCRUD:
 
     def test_list_tasks(self, client: Client) -> None:
         client.post(
-            f"{TASKS_BASE_URL}/",
+            TASKS_BASE_URL,
             data=json.dumps({"title": "Task for listing"}),
             content_type="application/json",
         )
-        response = client.get(f"{TASKS_BASE_URL}/")
+        response = client.get(TASKS_BASE_URL)
         assert response.status_code == 200
         assert_success_envelope(response.json(), 200, "GET")
         data = payload(response)
@@ -80,17 +80,17 @@ class TestTasksCRUD:
 
     def test_list_tasks_paginates_results(self, client: Client) -> None:
         client.post(
-            f"{TASKS_BASE_URL}/",
+            TASKS_BASE_URL,
             data=json.dumps({"title": "First", "priority": 1}),
             content_type="application/json",
         )
         client.post(
-            f"{TASKS_BASE_URL}/",
+            TASKS_BASE_URL,
             data=json.dumps({"title": "Second", "priority": 2}),
             content_type="application/json",
         )
 
-        response = client.get(f"{TASKS_BASE_URL}/?page=1&pageSize=1")
+        response = client.get(f"{TASKS_BASE_URL}?page=1&pageSize=1")
         assert response.status_code == 200
         data = payload(response)
         assert len(data["data"]) == 1
@@ -98,17 +98,17 @@ class TestTasksCRUD:
 
     def test_list_tasks_supports_status_and_priority_filters(self, client: Client) -> None:
         client.post(
-            f"{TASKS_BASE_URL}/",
+            TASKS_BASE_URL,
             data=json.dumps({"title": "Low pending", "priority": 1, "status": "PENDING"}),
             content_type="application/json",
         )
         client.post(
-            f"{TASKS_BASE_URL}/",
+            TASKS_BASE_URL,
             data=json.dumps({"title": "High in progress", "priority": 5, "status": "IN_PROGRESS"}),
             content_type="application/json",
         )
 
-        response = client.get(f"{TASKS_BASE_URL}/?status=IN_PROGRESS&priority=5")
+        response = client.get(f"{TASKS_BASE_URL}?status=IN_PROGRESS&priority=5")
 
         assert response.status_code == 200
         data = payload(response)
@@ -118,7 +118,7 @@ class TestTasksCRUD:
 
     def test_get_task(self, client: Client) -> None:
         create_resp = client.post(
-            f"{TASKS_BASE_URL}/",
+            TASKS_BASE_URL,
             data=json.dumps({"title": "Task to get"}),
             content_type="application/json",
         )
@@ -129,7 +129,7 @@ class TestTasksCRUD:
 
     def test_update_task(self, client: Client) -> None:
         create_resp = client.post(
-            f"{TASKS_BASE_URL}/",
+            TASKS_BASE_URL,
             data=json.dumps({"title": "Task to update"}),
             content_type="application/json",
         )
@@ -146,7 +146,7 @@ class TestTasksCRUD:
 
     def test_delete_task(self, client: Client) -> None:
         create_resp = client.post(
-            f"{TASKS_BASE_URL}/",
+            TASKS_BASE_URL,
             data=json.dumps({"title": "Task to delete"}),
             content_type="application/json",
         )
@@ -174,7 +174,7 @@ class TestTasksNotFound:
 class TestTasksValidation:
     def test_create_task_empty_title_rejected(self, client: Client) -> None:
         response = client.post(
-            f"{TASKS_BASE_URL}/",
+            TASKS_BASE_URL,
             data=json.dumps({"title": ""}),
             content_type="application/json",
         )
@@ -183,7 +183,7 @@ class TestTasksValidation:
 
     def test_create_task_invalid_priority_rejected(self, client: Client) -> None:
         response = client.post(
-            f"{TASKS_BASE_URL}/",
+            TASKS_BASE_URL,
             data=json.dumps({"title": "Bad priority", "priority": 99}),
             content_type="application/json",
         )
@@ -191,7 +191,7 @@ class TestTasksValidation:
 
     def test_create_task_invalid_status_rejected(self, client: Client) -> None:
         response = client.post(
-            f"{TASKS_BASE_URL}/",
+            TASKS_BASE_URL,
             data=json.dumps({"title": "Bad status", "status": "INVALID"}),
             content_type="application/json",
         )
@@ -203,9 +203,13 @@ class TestTasksValidation:
 def test_tasks_api_is_rate_limited(client: Client) -> None:
     cache.clear()
 
-    first_response = client.get(f"{TASKS_BASE_URL}/")
-    second_response = client.get(f"{TASKS_BASE_URL}/")
+    first_response = client.get(TASKS_BASE_URL)
+    second_response = client.get(TASKS_BASE_URL)
 
     assert first_response.status_code == 200
     assert second_response.status_code == 429
+    for response in (first_response, second_response):
+        assert response.headers["x-ratelimit-limit"].isdigit()
+        assert response.headers["x-ratelimit-remaining"].isdigit()
+        assert response.headers["x-ratelimit-reset"].isdigit()
     assert_error_envelope(second_response.json(), 429, "GET")
