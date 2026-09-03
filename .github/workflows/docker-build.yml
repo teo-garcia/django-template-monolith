@@ -1,6 +1,10 @@
 name: Docker Build
 
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -36,8 +40,35 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile
+          load: true
           push: false
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            django-template-monolith:ci
+            ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Start production image
+        run: |
+          docker run --detach --name production-smoke \
+            --publish 127.0.0.1:43118:8000 \
+            --env ALLOWED_HOSTS=localhost,127.0.0.1 \
+            --env OTEL_ENABLED=false \
+            --env SECRET_KEY=production-smoke-secret-key-with-enough-entropy \
+            django-template-monolith:ci
+
+      - name: Verify production image liveness
+        run: |
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:43118/health/live > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs production-smoke
+          exit 1
+
+      - name: Stop production image
+        if: always()
+        run: docker rm --force production-smoke 2>/dev/null || true
