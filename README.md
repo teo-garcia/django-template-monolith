@@ -154,6 +154,9 @@ promoting beyond local development:
   `SECURE_SSL_REDIRECT=true`, `SECURE_HSTS_SECONDS=31536000`,
   `SESSION_COOKIE_SECURE=true`, and `CSRF_COOKIE_SECURE=true`.
 - Run `make django-check-deploy` before promoting a production configuration.
+- The image runs one Gunicorn worker per container so `/metrics` represents the
+  whole process. Scale containers horizontally instead of adding in-process
+  workers unless Prometheus multiprocess aggregation is configured first.
 - Production schema changes go through `make db-deploy`.
 - Use `docker-compose.prod.yml` for a production-like local smoke test:
   `docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build`.
